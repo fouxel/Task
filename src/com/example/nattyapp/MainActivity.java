@@ -31,23 +31,6 @@ public class MainActivity extends Activity {
 		ListAdapter listAdapter = new ArrayAdapter<Date>(this, android.R.layout.simple_list_item_1, dateList);
 		lv.setAdapter(listAdapter);
 
-		Parser parser = new Parser();
-		List<DateGroup> groups = parser.parse("the day before next thursday");
-		for (DateGroup group : groups) {
-			List<Date> dates = group.getDates();
-			int line = group.getLine();
-			int column = group.getPosition();
-			String matchingValue = group.getText();
-			String syntaxTree = group.getSyntaxTree().toStringTree();
-			Map parseMap = group.getParseLocations();
-			boolean isRecurreing = group.isRecurring();
-			Date recursUntil = group.getRecursUntil();
-
-			/* if any Dates are present in current group then add them to dateList */
-			if (group.getDates() != null) {
-				dateList.addAll(group.getDates());
-			}
-		}
 		Log.i("NATTY-APP", "Test app is complete");
 	}
 
