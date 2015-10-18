@@ -43,7 +43,6 @@ public class SmsReceiver extends BroadcastReceiver {
 	
 	private SmsMessage[] getMessagesFromIntent(Intent intent) {
         Object[] messages = (Object[]) intent.getSerializableExtra("pdus");
-        String format = intent.getStringExtra("format");
 
         int pduCount = messages.length;
         SmsMessage[] msgs = new SmsMessage[pduCount];
