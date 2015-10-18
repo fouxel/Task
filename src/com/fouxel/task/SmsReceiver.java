@@ -1,4 +1,4 @@
-package com.example.nattyapp;
+package com.fouxel.task;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.fouxel.task.R;
 import com.joestelmach.natty.DateGroup;
 import com.joestelmach.natty.Parser;
 
