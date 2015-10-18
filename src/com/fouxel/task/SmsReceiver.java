@@ -14,11 +14,15 @@ import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
+import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.telephony.SmsMessage;
@@ -44,12 +48,18 @@ public class SmsReceiver extends BroadcastReceiver {
 		if (intent.getAction().equals(SMS_RECEIVED_ACTION)) {
 			for (SmsMessage smsMessage : this.getMessagesFromIntent(intent)) { 
 				String messageBody = smsMessage.getMessageBody();
-				String address = smsMessage.getOriginatingAddress();
+				String phoneNumber = smsMessage.getOriginatingAddress();
+				String contactName = getContactName(context, phoneNumber);
+				if(contactName == null) { 
+					contactName = phoneNumber;
+				}
 				messageBody = messageBody.toLowerCase(Locale.ENGLISH);
 				if(messageBody.contains(TASK_PREFIX)) {
 					Date beginTime = getBeginTime(messageBody);
-					Intent resultIntent = addEventToCalendar(context, beginTime, messageBody, address);
-					addNotification(context, resultIntent, beginTime);
+					Intent resultIntent = addEventToCalendar(context, beginTime, messageBody,contactName);
+					if(resultIntent != null) {
+						addNotification(context, resultIntent, beginTime);
+					}
 				}
 			}
 		}
@@ -69,14 +79,14 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 	
 	@SuppressLint("NewApi")
-	private Intent addEventToCalendar(Context context, Date beginTime, String messageBody, String address) {
+	private Intent addEventToCalendar(Context context, Date beginTime, String messageBody, String contactName) {
 		Calendar cal = Calendar.getInstance();
 		if(Build.VERSION.SDK_INT >= 14) { 
 			Intent intent = new Intent(Intent.ACTION_INSERT).setData(Events.CONTENT_URI)
 					.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime)
 					.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, beginTime.getTime() + 60*1000)
 					.putExtra(Events.TITLE, "Spotkanie")
-					.putExtra(Events.DESCRIPTION, "\"" + removeTaskPrefix(messageBody) + "\" From: " + address)
+					.putExtra(Events.DESCRIPTION, "\"" + removeTaskPrefix(messageBody) + "\" From: " + contactName)
 					.putExtra(Events.AVAILABILITY, Events.AVAILABILITY_BUSY)
 					.putExtra(CalendarContract.Reminders.MINUTES, 5);
 			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -150,5 +160,25 @@ public class SmsReceiver extends BroadcastReceiver {
 		return date1.getDay() == date2.getDay()
 				&& date1.getMonth() == date2.getMonth()
 				&& date1.getYear() == date2.getYear();
+	}
+	
+	public static String getContactName(Context context, String phoneNumber) { 
+		ContentResolver cr = context.getContentResolver();
+		Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+		Cursor cursor = cr.query(uri, new String[]{PhoneLookup.DISPLAY_NAME}, null, null, null);
+		if (cursor == null) { 
+			return null;
+		}
+		String contactName = null;
+		if (cursor.moveToFirst()) { 
+			contactName = cursor.getString(cursor.getColumnIndex(PhoneLookup.DISPLAY_NAME));
+		}
+		
+		if (cursor != null && !cursor.isClosed()) { 
+			cursor.close();
+		}
+		
+		return contactName;
+
 	}
 }
