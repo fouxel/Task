@@ -83,7 +83,7 @@ public class SmsReceiver extends BroadcastReceiver {
 		Calendar cal = Calendar.getInstance();
 		if(Build.VERSION.SDK_INT >= 14) { 
 			Intent intent = new Intent(Intent.ACTION_INSERT).setData(Events.CONTENT_URI)
-					.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime)
+					.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTime())
 					.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, beginTime.getTime() + 60*1000)
 					.putExtra(Events.TITLE, "Spotkanie")
 					.putExtra(Events.DESCRIPTION, "\"" + removeTaskPrefix(messageBody) + "\" From: " + contactName)
