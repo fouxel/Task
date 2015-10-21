@@ -14,24 +14,18 @@ import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
-import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.telephony.SmsMessage;
-import android.util.Log;
 
 
 public class SmsReceiver extends BroadcastReceiver {
 
-	private static final String TASK_PREFIX = ".task ";
 	private static final String SMS_RECEIVED_ACTION = "android.provider.Telephony.SMS_RECEIVED";
 	private static final String NOTIFICATION_FORMAT = "yyyy.MM.dd 'at' HH:mm";
 	private static final String NOTIFICATION_FORMAT_TODAY = "'Today at' HH:mm";
@@ -49,12 +43,10 @@ public class SmsReceiver extends BroadcastReceiver {
 			for (SmsMessage smsMessage : this.getMessagesFromIntent(intent)) { 
 				String messageBody = smsMessage.getMessageBody();
 				String phoneNumber = smsMessage.getOriginatingAddress();
-				String contactName = getContactName(context, phoneNumber);
-				if(contactName == null) { 
-					contactName = phoneNumber;
-				}
+				String contactName = ResourcesHelper.getContactNameOrPhoneNumber(context, phoneNumber);
 				messageBody = messageBody.toLowerCase(Locale.ENGLISH);
-				if(messageBody.contains(TASK_PREFIX)) {
+				if(messageBody.contains(ResourcesHelper.TASK_PREFIX)) {
+					SmsReceiverObserver.getInstance().updateValue(new Row(messageBody, contactName));
 					Date beginTime = getBeginTime(messageBody);
 					Intent resultIntent = addEventToCalendar(context, beginTime, messageBody,contactName);
 					if(resultIntent != null) {
@@ -78,21 +70,17 @@ public class SmsReceiver extends BroadcastReceiver {
         return msgs;
     }
 	
-	@SuppressLint("NewApi")
 	private Intent addEventToCalendar(Context context, Date beginTime, String messageBody, String contactName) {
 		Calendar cal = Calendar.getInstance();
-		if(Build.VERSION.SDK_INT >= 14) { 
-			Intent intent = new Intent(Intent.ACTION_INSERT).setData(Events.CONTENT_URI)
-					.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTime())
-					.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, beginTime.getTime() + 60*1000)
-					.putExtra(Events.TITLE, "Spotkanie")
-					.putExtra(Events.DESCRIPTION, "\"" + removeTaskPrefix(messageBody) + "\" From: " + contactName)
-					.putExtra(Events.AVAILABILITY, Events.AVAILABILITY_BUSY)
-					.putExtra(CalendarContract.Reminders.MINUTES, 5);
-			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			return intent;
-		}
-		return null;
+		Intent intent = new Intent(Intent.ACTION_INSERT).setData(Events.CONTENT_URI)
+				.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTime())
+				.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, beginTime.getTime() + 60*1000)
+				.putExtra(Events.TITLE, "Spotkanie")
+				.putExtra(Events.DESCRIPTION, "\"" + ResourcesHelper.removeTaskPrefix(messageBody) + "\" From: " + contactName)
+				.putExtra(Events.AVAILABILITY, Events.AVAILABILITY_BUSY)
+				.putExtra(CalendarContract.Reminders.MINUTES, 5);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		return intent;
 	}
 	
 	private void addNotification(Context context, Intent resultIntent, Date beginTime) { 
@@ -116,7 +104,7 @@ public class SmsReceiver extends BroadcastReceiver {
 	}
 	
 	private Date getBeginTime(String input) { 
-		input = removeTaskPrefix(input);
+		input = ResourcesHelper.removeTaskPrefix(input);
 		List<Date> dateList = new ArrayList<Date>();
 
 		Parser parser = new Parser();
@@ -142,9 +130,6 @@ public class SmsReceiver extends BroadcastReceiver {
 		return new Date();
 	}
 	
-	private String removeTaskPrefix(String input) { 
-		return input.replace(TASK_PREFIX, "");
-	}
 	
 	private String getNotificationFormatDate(Date inputDate) {
 		SimpleDateFormat sDate;
@@ -162,23 +147,4 @@ public class SmsReceiver extends BroadcastReceiver {
 				&& date1.getYear() == date2.getYear();
 	}
 	
-	public static String getContactName(Context context, String phoneNumber) { 
-		ContentResolver cr = context.getContentResolver();
-		Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-		Cursor cursor = cr.query(uri, new String[]{PhoneLookup.DISPLAY_NAME}, null, null, null);
-		if (cursor == null) { 
-			return null;
-		}
-		String contactName = null;
-		if (cursor.moveToFirst()) { 
-			contactName = cursor.getString(cursor.getColumnIndex(PhoneLookup.DISPLAY_NAME));
-		}
-		
-		if (cursor != null && !cursor.isClosed()) { 
-			cursor.close();
-		}
-		
-		return contactName;
-
-	}
 }
