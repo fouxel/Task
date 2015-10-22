@@ -40,17 +40,17 @@ public class SmsReceiver extends BroadcastReceiver {
 	
 	public void onReceive(Context context, Intent intent) {
 		if (intent.getAction().equals(SMS_RECEIVED_ACTION)) {
-			for (SmsMessage smsMessage : this.getMessagesFromIntent(intent)) { 
+			
+			for (SmsMessage smsMessage : this.getMessagesFromIntent(intent)) {
 				String messageBody = smsMessage.getMessageBody();
-				String phoneNumber = smsMessage.getOriginatingAddress();
-				String contactName = ResourcesHelper.getContactNameOrPhoneNumber(context, phoneNumber);
-				messageBody = messageBody.toLowerCase(Locale.ENGLISH);
-				if(messageBody.contains(ResourcesHelper.TASK_PREFIX)) {
-					SmsReceiverObserver.getInstance().updateValue(new Row(messageBody, contactName));
-					Date beginTime = getBeginTime(messageBody);
-					Intent resultIntent = addEventToCalendar(context, beginTime, messageBody,contactName);
+				if(TextMessage.isTaskMessage(messageBody)) {
+					TextMessage textMessage = new TextMessage(
+							ResourcesHelper.getContactNameOrPhoneNumber(context, smsMessage.getOriginatingAddress()),
+							messageBody);
+					SmsReceiverObserver.getInstance().updateValue(textMessage);
+					Intent resultIntent = ResourcesHelper.addEventToCalendar(context, textMessage);
 					if(resultIntent != null) {
-						addNotification(context, resultIntent, beginTime);
+						addNotification(context, resultIntent, textMessage.getEventBeginTime());
 					}
 				}
 			}
@@ -69,19 +69,6 @@ public class SmsReceiver extends BroadcastReceiver {
         }
         return msgs;
     }
-	
-	private Intent addEventToCalendar(Context context, Date beginTime, String messageBody, String contactName) {
-		Calendar cal = Calendar.getInstance();
-		Intent intent = new Intent(Intent.ACTION_INSERT).setData(Events.CONTENT_URI)
-				.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTime())
-				.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, beginTime.getTime() + 60*1000)
-				.putExtra(Events.TITLE, "Spotkanie")
-				.putExtra(Events.DESCRIPTION, "\"" + ResourcesHelper.removeTaskPrefix(messageBody) + "\" From: " + contactName)
-				.putExtra(Events.AVAILABILITY, Events.AVAILABILITY_BUSY)
-				.putExtra(CalendarContract.Reminders.MINUTES, 5);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		return intent;
-	}
 	
 	private void addNotification(Context context, Intent resultIntent, Date beginTime) { 
 	    mBuilder = new NotificationCompat.Builder(context)
@@ -102,34 +89,6 @@ public class SmsReceiver extends BroadcastReceiver {
 		mNotificationManager.notify(notificationIdBase, mBuilder.build());
 		notificationIdBase++;
 	}
-	
-	private Date getBeginTime(String input) { 
-		input = ResourcesHelper.removeTaskPrefix(input);
-		List<Date> dateList = new ArrayList<Date>();
-
-		Parser parser = new Parser();
-		List<DateGroup> groups = parser.parse(input);
-		for (DateGroup group : groups) {
-//			int line = group.getLine();
-//			int column = group.getPosition();
-//			String matchingValue = group.getText();
-//			String syntaxTree = group.getSyntaxTree().toStringTree();
-//			Map parseMap = group.getParseLocations();
-//			boolean isRecurring = group.isRecurring();
-//			Date recursUntil = group.getRecursUntil();
-
-			/* if any Dates are present in current group then add them to dateList */
-			if (group.getDates() != null) {
-				dateList.addAll(group.getDates());
-			}
-		}
-		if(dateList.size() > 0) { 
-			Date date = dateList.get(0);
-			return date;
-		}
-		return new Date();
-	}
-	
 	
 	private String getNotificationFormatDate(Date inputDate) {
 		SimpleDateFormat sDate;

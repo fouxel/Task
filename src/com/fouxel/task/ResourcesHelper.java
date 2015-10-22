@@ -1,11 +1,16 @@
 package com.fouxel.task;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.provider.ContactsContract.PhoneLookup;
 
 public class ResourcesHelper {
@@ -22,7 +27,7 @@ public class ResourcesHelper {
 	 * @param context Context
 	 * @param smsRows retrieved text messages will be put into this list.
 	 */
-	public static void getSMS(Context context, ArrayList<Row> smsRows) { 
+	public static void getSMS(Context context, ArrayList<TextMessage> smsRows) { 
 		Uri uriSMSURI = Uri.parse(INBOX_URI);
 		Cursor cur = context.getContentResolver().query(uriSMSURI, null, null, null, null);
 		
@@ -31,22 +36,11 @@ public class ResourcesHelper {
 			String body = cur.getString(cur.getColumnIndexOrThrow(BODY));
 			String contactName = getContactNameOrPhoneNumber(context, address);
 			if(body.contains(TASK_PREFIX) || body.contains(TASK_PREFIX_UPPERCASE)) {
-				smsRows.add(new Row(body, contactName));
+				smsRows.add(new TextMessage(body, contactName));
 			}
 		}
 	}
 
-	/**
-	 * Removes .Task prefix from message
-	 * 
-	 * @param input
-	 * @return parsed String
-	 */
-	
-	public static String removeTaskPrefix(String input) { 
-		return input.replace(ResourcesHelper.TASK_PREFIX, "");
-	}
-	
 	public static String getContactName(Context context, String phoneNumber) { 
 		ContentResolver cr = context.getContentResolver();
 		Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
@@ -74,5 +68,18 @@ public class ResourcesHelper {
 		}
 		return contactName;
 	}
+	
+	public static Intent addEventToCalendar(Context context, TextMessage textMessage) {
+		Calendar cal = Calendar.getInstance();
+		Intent intent = new Intent(Intent.ACTION_INSERT).setData(Events.CONTENT_URI)
+				.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, textMessage.getEventBeginTime().getTime())
+				.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, textMessage.getEventBeginTime().getTime() + 60*1000)
+				.putExtra(Events.TITLE, "Spotkanie")
+				.putExtra(Events.DESCRIPTION, "\"" + textMessage.getMessageBody() + "\" From: " + textMessage.getSenderName())
+				.putExtra(Events.AVAILABILITY, Events.AVAILABILITY_BUSY)
+				.putExtra(CalendarContract.Reminders.MINUTES, 5);
+		return intent;
+	}
+	
 
 }

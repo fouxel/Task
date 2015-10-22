@@ -38,4 +38,14 @@
         android:gravity="center_vertical"
         android:text="Example application"
         android:textSize="16sp" />
+    
+    <Button 
+        android:id="@+id/addButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_alignParentRight="true"
+        android:gravity="center_vertical"
+        android:text="Add"
+        android:focusable="false"
+        />
 </RelativeLayout>
