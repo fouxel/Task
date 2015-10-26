@@ -1,7 +1,6 @@
 package com.fouxel.task;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -15,6 +14,7 @@ import android.view.View.OnClickListener;
 import android.content.Intent;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements Observer {
 	private ListView list;
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 	private ArrayList<TextMessage> smsRows;
 	private static final int REQUEST_CODE_CALENDAR = 2;
 	private ActionBar actionBar;
+	private TextView noMessagesInfo;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -30,14 +31,18 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		SmsReceiverObserver.getInstance().addObserver(this);
 		
 		list = (ListView) findViewById(R.id.smsList);
-
-		smsRows = new ArrayList<TextMessage>();
+		noMessagesInfo = (TextView) findViewById(R.id.noMessages);
 		
+		smsRows = new ArrayList<TextMessage>();
 		adapter = new RowListAdapter(this, R.layout.row, smsRows, R.id.title, R.id.description);
 		list.setAdapter(adapter);
 		
 		smsRows.clear();
 		ResourcesHelper.getSMS(this, smsRows);
+		if (!smsRows.isEmpty()) { 
+			list.setVisibility(View.VISIBLE);
+			noMessagesInfo.setVisibility(View.GONE);
+		}
 		adapter.notifyDataSetChanged();
 		
 		actionBar = getSupportActionBar();
@@ -58,6 +63,10 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		if(data.getClass() == TextMessage.class) {
 	        smsRows.add(0, (TextMessage)data);
 			adapter.notifyDataSetChanged();
+			if (!smsRows.isEmpty()) { 
+				list.setVisibility(View.VISIBLE);
+				noMessagesInfo.setVisibility(View.GONE);
+			}
 		}
 	}
 	
