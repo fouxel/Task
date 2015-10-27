@@ -29,7 +29,7 @@ public class SmsReceiver extends BroadcastReceiver {
 	private static final String SMS_RECEIVED_ACTION = "android.provider.Telephony.SMS_RECEIVED";
 	private static final String NOTIFICATION_FORMAT = "yyyy.MM.dd 'at' HH:mm";
 	private static final String NOTIFICATION_FORMAT_TODAY = "'Today at' HH:mm";
-	private static int notificationIdBase = 0;
+	private static int notificationId = 0;
 	NotificationCompat.Builder mBuilder;
 	
 	
@@ -49,9 +49,7 @@ public class SmsReceiver extends BroadcastReceiver {
 							messageBody);
 					SmsReceiverObserver.getInstance().updateValue(textMessage);
 					Intent resultIntent = ResourcesHelper.addEventToCalendar(context, textMessage);
-					if(resultIntent != null) {
-						addNotification(context, resultIntent, textMessage.getEventBeginTime());
-					}
+					addNotification(context, textMessage);
 				}
 			}
 		}
@@ -70,24 +68,39 @@ public class SmsReceiver extends BroadcastReceiver {
         return msgs;
     }
 	
-	private void addNotification(Context context, Intent resultIntent, Date beginTime) { 
-	    mBuilder = new NotificationCompat.Builder(context)
-				.setSmallIcon(R.drawable.ic_launcher)
-				.setAutoCancel(true)
-				.setContentTitle("Nowe zadanie")
-				.setContentText(getNotificationFormatDate(beginTime));
+	private void addNotification(Context context, TextMessage textMessage) { 
+	    Intent calendarIntent = new Intent(context, NotificationResultActivity.class);
+	    calendarIntent.putExtra(ResourcesHelper.NOTIFICATION_ID_NAME, notificationId);
+	    calendarIntent.putExtra(ResourcesHelper.FLAG_IS_CALENDAR_INTENT, true);
+	    calendarIntent.putExtra(TextMessage.class.toString(), textMessage);
 	    
-		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-		stackBuilder.addParentStack(MainActivity.class);
-		stackBuilder.addNextIntent(resultIntent);
-		PendingIntent resultPendingIntent = 
-				stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-		mBuilder.setContentIntent(resultPendingIntent);
-		NotificationManager mNotificationManager = 
+	    Intent addEventIntent = new Intent(context, NotificationResultActivity.class);
+	    addEventIntent.putExtra(ResourcesHelper.NOTIFICATION_ID_NAME, notificationId);
+	    addEventIntent.putExtra(ResourcesHelper.FLAG_IS_CALENDAR_INTENT, false);
+	    addEventIntent.putExtra(TextMessage.class.toString(), textMessage);
+	    
+		PendingIntent pendingCalendarIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), calendarIntent, 0);
+		PendingIntent pendingAddEventIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis() + 1, addEventIntent, 0);
+		mBuilder = new NotificationCompat.Builder(context)
+				.setSmallIcon(R.drawable.ic_launcher)
+				.setContentTitle("Nowe zadanie")
+				.addAction(R.drawable.ic_check, "Add", pendingAddEventIntent)
+				.addAction(R.drawable.ic_calendar, "View", pendingCalendarIntent)
+				.setWhen(0)
+				.setAutoCancel(true)
+				.setContentText(getNotificationFormatDate(textMessage.getEventBeginTime()));
+	    
+//		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+//		stackBuilder.addParentStack(MainActivity.class);
+//		stackBuilder.addNextIntent(resultIntent);
+//		PendingIntent resultPendingIntent = 
+//				stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+//		mBuilder.setContentIntent(resultPendingIntent);
+		NotificationManager notificationManager = 
 			(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 	
-		mNotificationManager.notify(notificationIdBase, mBuilder.build());
-		notificationIdBase++;
+		notificationManager.notify(notificationId, mBuilder.build());
+		notificationId++;
 	}
 	
 	private String getNotificationFormatDate(Date inputDate) {
