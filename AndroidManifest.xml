@@ -27,7 +27,8 @@
         </activity>
         <activity
              android:name=".NotificationResultActivity"
-             android:label="added event">
+             android:label="added event"
+             android:theme="@style/Theme.AppCompat.Translucent">
                        
         </activity>
         

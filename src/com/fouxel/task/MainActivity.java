@@ -19,10 +19,11 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity implements Observer {
 	private ListView list;
 	private RowListAdapter adapter;
-	private ArrayList<TextMessage> smsRows;
 	private static final int REQUEST_CODE_CALENDAR = 2;
 	private ActionBar actionBar;
 	private TextView noMessagesInfo;
+	private MessagesManager messagesManager;
+	private ArrayList<TextMessage> textMessages;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,17 +34,13 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		list = (ListView) findViewById(R.id.smsList);
 		noMessagesInfo = (TextView) findViewById(R.id.noMessages);
 		
-		smsRows = new ArrayList<TextMessage>();
-		adapter = new RowListAdapter(this, R.layout.row, smsRows, R.id.title, R.id.description);
+		messagesManager = MessagesManager.getInstance();
+		messagesManager.retrieveTextMessagesFromInbox(this);
+		textMessages = messagesManager.getTextMessages();
+		adapter = new RowListAdapter(this, R.layout.row, textMessages, R.id.title, R.id.description);
 		list.setAdapter(adapter);
-		
-		smsRows.clear();
-		ResourcesHelper.getSMS(this, smsRows);
-		if (!smsRows.isEmpty()) { 
-			list.setVisibility(View.VISIBLE);
-			noMessagesInfo.setVisibility(View.GONE);
-		}
 		adapter.notifyDataSetChanged();
+		hideNoMessagesInfoIfListIsEmpty();
 		
 		actionBar = getSupportActionBar();
 		actionBar.setTitle(R.string.messages);
@@ -55,19 +52,13 @@ public class MainActivity extends AppCompatActivity implements Observer {
 	}
 	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Log.i("EJAKBED", "ResultCode: " + resultCode);
-	};
+
+	}
 	
 	@Override
 	public void update(Observable observable, Object data) {
-		if(data.getClass() == TextMessage.class) {
-	        smsRows.add(0, (TextMessage)data);
-			adapter.notifyDataSetChanged();
-			if (!smsRows.isEmpty()) { 
-				list.setVisibility(View.VISIBLE);
-				noMessagesInfo.setVisibility(View.GONE);
-			}
-		}
+		adapter.notifyDataSetChanged();
+		hideNoMessagesInfoIfListIsEmpty();				
 	}
 	
 	public void addButtonClicked(Button addButton, final TextMessage textMessage, final int buttonPosition) { 
@@ -78,5 +69,12 @@ public class MainActivity extends AppCompatActivity implements Observer {
 				startActivityForResult(i, REQUEST_CODE_CALENDAR);
 			}
 		});
+	}
+	
+	private void hideNoMessagesInfoIfListIsEmpty() { 
+		if (!textMessages.isEmpty()) { 
+			list.setVisibility(View.VISIBLE);
+			noMessagesInfo.setVisibility(View.GONE);
+		}
 	}
 }

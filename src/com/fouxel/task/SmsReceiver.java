@@ -11,6 +11,7 @@ import com.joestelmach.natty.DateGroup;
 import com.joestelmach.natty.Parser;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -22,6 +23,7 @@ import android.provider.CalendarContract.Events;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
 
 public class SmsReceiver extends BroadcastReceiver {
@@ -45,9 +47,10 @@ public class SmsReceiver extends BroadcastReceiver {
 				String messageBody = smsMessage.getMessageBody();
 				if(TextMessage.isTaskMessage(messageBody)) {
 					TextMessage textMessage = new TextMessage(
-							ResourcesHelper.getContactNameOrPhoneNumber(context, smsMessage.getOriginatingAddress()),
+							ResourcesHelper.getSenderName(context, smsMessage.getOriginatingAddress()),
 							messageBody);
-					SmsReceiverObserver.getInstance().updateValue(textMessage);
+					MessagesManager.getInstance().addAtBeginning(textMessage);
+					SmsReceiverObserver.getInstance().updateValue(true); //true only in order to not to pass null object
 					Intent resultIntent = ResourcesHelper.addEventToCalendar(context, textMessage);
 					addNotification(context, textMessage);
 				}
@@ -98,7 +101,9 @@ public class SmsReceiver extends BroadcastReceiver {
 //		mBuilder.setContentIntent(resultPendingIntent);
 		NotificationManager notificationManager = 
 			(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-	
+
+		Notification notification = mBuilder.build();
+		
 		notificationManager.notify(notificationId, mBuilder.build());
 		notificationId++;
 	}
