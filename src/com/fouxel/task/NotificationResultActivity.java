@@ -17,7 +17,8 @@ public class NotificationResultActivity extends Activity {
 		NotificationManager notificationManager = 
 				(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.cancel(notificationId);
-		
+		MessagesManager.getInstance().markAllMessagesAsRead();
+
 		boolean isCalendarIntent = intent.getBooleanExtra(ResourcesHelper.FLAG_IS_CALENDAR_INTENT, false);
 		TextMessage textMessage = intent.getParcelableExtra(TextMessage.class.toString());
 		if (isCalendarIntent) { 
@@ -30,7 +31,6 @@ public class NotificationResultActivity extends Activity {
 			Toast.makeText(this, "Event added", Toast.LENGTH_LONG).show();
 		}
 		
-		textMessage.setRead(true);
 		moveTaskToBack(true);
 		finish();
 	}

@@ -22,6 +22,7 @@ import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 import android.provider.Telephony.MmsSms.PendingMessages;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.Action;
 import android.support.v4.app.TaskStackBuilder;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -84,13 +85,16 @@ public class SmsReceiver extends BroadcastReceiver {
 	    Intent calendarIntent = new Intent(context, NotificationResultActivity.class);
 	    calendarIntent.putExtra(ResourcesHelper.NOTIFICATION_ID_NAME, notificationId);
 	    calendarIntent.putExtra(ResourcesHelper.FLAG_IS_CALENDAR_INTENT, true);
+	    calendarIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+	    calendarIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+	    calendarIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	    calendarIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 	    calendarIntent.putExtra(TextMessage.class.toString(), textMessage);
 	    
 	    Intent addEventIntent = new Intent(context, NotificationResultActivity.class);
 	    addEventIntent.putExtra(ResourcesHelper.NOTIFICATION_ID_NAME, notificationId);
 	    addEventIntent.putExtra(ResourcesHelper.FLAG_IS_CALENDAR_INTENT, false);
 	    addEventIntent.putExtra(TextMessage.class.toString(), textMessage);
-	    
 		PendingIntent pendingCalendarIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), calendarIntent, 0);
 		PendingIntent pendingAddEventIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis() + 1, addEventIntent, 0);
 		mBuilder = new NotificationCompat.Builder(context)
