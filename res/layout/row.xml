@@ -39,13 +39,27 @@
         android:text="Example application"
         android:textSize="16sp" />
     
-    <Button 
+    <ImageButton 
         android:id="@+id/addButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
         android:layout_alignParentRight="true"
         android:gravity="center_vertical"
-        android:text="Add"
         android:focusable="false"
+        android:src="@drawable/ic_calendar"
+        android:background="@android:color/transparent"
         />
+    <ImageButton 
+        android:id="@+id/insertButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_toLeftOf="@id/addButton"
+        android:gravity="center_vertical"
+        android:focusable="false"
+        android:layout_marginRight="5dp"
+        android:src="@drawable/ic_check"
+        android:background="@android:color/transparent"
+        />
+        
+    
 </RelativeLayout>

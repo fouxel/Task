@@ -10,6 +10,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class RowListAdapter  extends BaseAdapter {
@@ -49,7 +50,8 @@ public class RowListAdapter  extends BaseAdapter {
 		View view;
 		TextView title;
 		TextView description;
-		Button buttonAdd;
+		ImageButton buttonAdd;
+		ImageButton buttonInsert;
 		TextMessage textMessage;
 		
 		if(convertView == null) {
@@ -60,8 +62,11 @@ public class RowListAdapter  extends BaseAdapter {
 		textMessage = (TextMessage) getItem(position);
 		title = (TextView)view.findViewById(titleId);
 		description = (TextView)view.findViewById(descriptionId);
-		buttonAdd = (Button)view.findViewById(R.id.addButton);
+		buttonAdd = (ImageButton) view.findViewById(R.id.addButton);
+		buttonInsert = (ImageButton) view.findViewById(R.id.insertButton);
 		activity.addButtonClicked(buttonAdd, textMessage, position);
+		activity.insertButtonClicked(buttonInsert, textMessage);
+		
 		title.setText(textMessage.getMessageBody());
 		description.setText(textMessage.getSenderName());
 		

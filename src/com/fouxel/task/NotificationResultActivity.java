@@ -26,9 +26,7 @@ public class NotificationResultActivity extends Activity {
 			i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			startActivity(i);
 		} else { 
-			long calendarId = ResourcesHelper.getCalendarId(this);
-			ResourcesHelper.insertCalendarEvent(this, calendarId, textMessage);
-			Toast.makeText(this, "Event added", Toast.LENGTH_LONG).show();
+			ResourcesHelper.insertCalendarEventAndNotify(this, textMessage);
 		}
 		
 		moveTaskToBack(true);

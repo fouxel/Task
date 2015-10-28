@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 import android.provider.ContactsContract.PhoneLookup;
+import android.widget.Toast;
 
 public class ResourcesHelper {
 	public static final String TASK_PREFIX = ".task ";
@@ -85,7 +86,6 @@ public class ResourcesHelper {
 		startMillis = textMessage.getEventBeginTime().getTime();
 		endMillis = textMessage.getEventBeginTime().getTime();
 		
-		
 		ContentResolver cr = context.getContentResolver();
 		ContentValues values  = new ContentValues();
 		values.put(Events.DTSTART, startMillis);
@@ -95,8 +95,11 @@ public class ResourcesHelper {
 		values.put(Events.CALENDAR_ID, calendarId);
 		values.put(Events.EVENT_TIMEZONE, "America/Los_Angeles");
 		Uri uri = cr.insert(Events.CONTENT_URI, values);
-		
 	}
 	
-
+	public static void insertCalendarEventAndNotify(Context context, TextMessage textMessage) {
+		long calendarId = ResourcesHelper.getCalendarId(context);
+		ResourcesHelper.insertCalendarEvent(context, calendarId, textMessage);
+		Toast.makeText(context, "Event added", Toast.LENGTH_LONG).show();
+	}
 }

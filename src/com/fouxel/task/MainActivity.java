@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.content.Intent;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		noMessagesInfo = (TextView) findViewById(R.id.noMessages);
 		
 		messagesManager = MessagesManager.getInstance();
+		//messagesManager.getTextMessages().clear();
 		messagesManager.retrieveTextMessagesFromInbox(this);
 		textMessages = messagesManager.getTextMessages();
 		adapter = new RowListAdapter(this, R.layout.row, textMessages, R.id.title, R.id.description);
@@ -62,12 +64,21 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		hideNoMessagesInfoIfListIsEmpty();				
 	}
 	
-	public void addButtonClicked(Button addButton, final TextMessage textMessage, final int buttonPosition) { 
+	public void addButtonClicked(ImageButton addButton, final TextMessage textMessage, final int buttonPosition) { 
 		addButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				Intent i = ResourcesHelper.addEventToCalendar(MainActivity.this, textMessage);
 				startActivityForResult(i, REQUEST_CODE_CALENDAR);
+			}
+		});
+	}
+	
+	public void insertButtonClicked(ImageButton insertButton, final TextMessage textMessage) { 
+		insertButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				ResourcesHelper.insertCalendarEventAndNotify(MainActivity.this, textMessage);
 			}
 		});
 	}
