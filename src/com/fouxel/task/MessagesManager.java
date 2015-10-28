@@ -41,7 +41,22 @@ public class MessagesManager {
 	public void addAtBeginning(TextMessage textMessage) {
 		add(textMessage, 0);
 	}
+
+	public int getNumberOfUnreadMessages() { 
+		int count = 0;
+		for (TextMessage textMessage : textMessages) {
+			if (!textMessage.isRead()) {
+				count++;
+			}
+		}
+		return count;
+	}
 	
+	public void markAllMessagesAsRead() { 
+		for (TextMessage textMessage : textMessages) {
+			textMessage.setRead(true);
+		}
+	}
 	/**
 	 * Retrieves text messages from inbox and adds it
 	 * into textMessages.

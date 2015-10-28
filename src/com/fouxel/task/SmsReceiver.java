@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
+import android.provider.Telephony.MmsSms.PendingMessages;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.telephony.SmsMessage;
@@ -71,7 +72,15 @@ public class SmsReceiver extends BroadcastReceiver {
         return msgs;
     }
 	
-	private void addNotification(Context context, TextMessage textMessage) { 
+	private void addNotification(Context context, TextMessage textMessage) {
+		int numberOfUnreadMessages = MessagesManager.getInstance().getNumberOfUnreadMessages(); 
+		if(numberOfUnreadMessages == 0) {
+			return;
+		}
+		Intent mainActivityIntent = new Intent(context, MainActivity.class);
+		PendingIntent pendingMainActivityIntent = PendingIntent.getActivity(context, (int)System.currentTimeMillis() + 2, mainActivityIntent, 0);
+		
+		if (numberOfUnreadMessages == 1) {
 	    Intent calendarIntent = new Intent(context, NotificationResultActivity.class);
 	    calendarIntent.putExtra(ResourcesHelper.NOTIFICATION_ID_NAME, notificationId);
 	    calendarIntent.putExtra(ResourcesHelper.FLAG_IS_CALENDAR_INTENT, true);
@@ -91,21 +100,22 @@ public class SmsReceiver extends BroadcastReceiver {
 				.addAction(R.drawable.ic_calendar, "View", pendingCalendarIntent)
 				.setWhen(0)
 				.setAutoCancel(true)
+				.setContentIntent(pendingMainActivityIntent)
 				.setContentText(getNotificationFormatDate(textMessage.getEventBeginTime()));
-	    
-//		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-//		stackBuilder.addParentStack(MainActivity.class);
-//		stackBuilder.addNextIntent(resultIntent);
-//		PendingIntent resultPendingIntent = 
-//				stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-//		mBuilder.setContentIntent(resultPendingIntent);
+		} else { 
+		mBuilder = new NotificationCompat.Builder(context)
+				.setSmallIcon(R.drawable.ic_launcher)
+				.setContentTitle("Nowe zadania")
+				.setWhen(0)
+				.setAutoCancel(true)
+				.setContentIntent(pendingMainActivityIntent)
+				.setContentText(numberOfUnreadMessages + " nieprzeczytane wiadomości");
+		}
+		
 		NotificationManager notificationManager = 
 			(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-		Notification notification = mBuilder.build();
 		
 		notificationManager.notify(notificationId, mBuilder.build());
-		notificationId++;
 	}
 	
 	private String getNotificationFormatDate(Date inputDate) {
