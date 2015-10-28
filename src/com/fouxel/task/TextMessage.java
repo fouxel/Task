@@ -14,17 +14,33 @@ public class TextMessage implements Parcelable{
 	private String senderName;
 	private String messageBody;
 	private Date eventBeginTime;
+	private boolean isRead;
 	
+	public boolean isRead() {
+		return isRead;
+	}
+
+	public void setRead(boolean isRead) {
+		this.isRead = isRead;
+	}
+
 	public TextMessage(String senderName, String messageBody) {
+		this(senderName, messageBody, false);
+	}
+	
+	public TextMessage(String senderName, String messageBody, boolean isRead) { 
 		super();
 		this.senderName = senderName;
 		this.messageBody = removeTaskPrefix(messageBody);
+		this.isRead = isRead;
 	}
+	
 	
 	public TextMessage(Parcel in) {
 		this.messageBody = in.readString();
 		this.senderName = in.readString();
 		this.eventBeginTime = (Date) in.readSerializable();
+		this.isRead = in.readByte() != 0;
 	}
 
 	public String getSenderName() {
@@ -103,7 +119,7 @@ public class TextMessage implements Parcelable{
 		dest.writeString(messageBody);
 		dest.writeString(senderName);
 		dest.writeSerializable(eventBeginTime);
-		
+		dest.writeByte((byte) (isRead ? 1 : 0));
 	}
 	
 	public static final Parcelable.Creator CREATOR = new Parcelable.Creator() { 

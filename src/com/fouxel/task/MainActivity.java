@@ -48,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
 	
 	protected void onResume(){
 		super.onResume();
-	
+		messagesManager.markAllMessagesAsRead();
+		
 	}
 	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {

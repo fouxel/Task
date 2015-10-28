@@ -30,7 +30,7 @@ public class NotificationResultActivity extends Activity {
 			Toast.makeText(this, "Event added", Toast.LENGTH_LONG).show();
 		}
 		
-		
+		textMessage.setRead(true);
 		moveTaskToBack(true);
 		finish();
 	}
