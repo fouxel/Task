@@ -53,8 +53,8 @@ public class ResourcesHelper {
 		Intent intent = new Intent(Intent.ACTION_INSERT).setData(Events.CONTENT_URI)
 				.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, textMessage.getEventBeginTime().getTime())
 				.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, textMessage.getEventEndTime().getTime())
-				.putExtra(Events.TITLE, "Spotkanie")
-				.putExtra(Events.DESCRIPTION, "\"" + textMessage.getMessageBody() + "\" From: " + textMessage.getSenderName())
+				.putExtra(Events.TITLE, context.getResources().getString(R.string.meeting))
+				.putExtra(Events.DESCRIPTION, getEventDescription(context, textMessage)) 
 				.putExtra(Events.AVAILABILITY, Events.AVAILABILITY_BUSY)
 				.putExtra(CalendarContract.Reminders.MINUTES, 5);
 		return intent;
@@ -90,16 +90,20 @@ public class ResourcesHelper {
 		ContentValues values  = new ContentValues();
 		values.put(Events.DTSTART, startMillis);
 		values.put(Events.DTEND, endMillis);
-		values.put(Events.TITLE, "Spotkanie2");
-		values.put(Events.DESCRIPTION, "Opis spotkania");
+		values.put(Events.TITLE, context.getResources().getString(R.string.meeting));
+		values.put(Events.DESCRIPTION, getEventDescription(context, textMessage));
 		values.put(Events.CALENDAR_ID, calendarId);
 		values.put(Events.EVENT_TIMEZONE, "America/Los_Angeles");
 		Uri uri = cr.insert(Events.CONTENT_URI, values);
 	}
 	
+	private static String getEventDescription(Context context,TextMessage textMessage) { 
+		return "\"" + textMessage.getMessageBody() + "\" " + context.getResources().getString(R.string.from) + " " + textMessage.getSenderName();
+	}
+	
 	public static void insertCalendarEventAndNotify(Context context, TextMessage textMessage) {
 		long calendarId = ResourcesHelper.getCalendarId(context);
 		ResourcesHelper.insertCalendarEvent(context, calendarId, textMessage);
-		Toast.makeText(context, "Event added", Toast.LENGTH_LONG).show();
+		Toast.makeText(context, R.string.task_added, Toast.LENGTH_LONG).show();
 	}
 }

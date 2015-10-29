@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="app_name">.Task</string>
+    <string name="action_settings">Ustawienia</string>
+    <string name="messages">Wiadomości</string>
+    <string name="meeting">Spotkanie</string>
+	<string name="new_task">Nowe zadanie</string>
+	<string name="today">Dzisiaj</string>
+	<string name="at">o</string>
+	<string name="add">Dodaj</string>
+	<string name="view">Zobacz</string>
+	<string name="unread_messages">nieprzeczytane wiadomości</string>
+	<string name="from">Od:</string>
+	<string name="no_messages">Brak wiadomości</string>
+	<string name="task_added">Zadanie dodane</string>
+</resources>
