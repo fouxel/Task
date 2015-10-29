@@ -52,7 +52,7 @@ public class ResourcesHelper {
 	public static Intent addEventToCalendar(Context context, TextMessage textMessage) {
 		Intent intent = new Intent(Intent.ACTION_INSERT).setData(Events.CONTENT_URI)
 				.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, textMessage.getEventBeginTime().getTime())
-				.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, textMessage.getEventBeginTime().getTime() + 60*1000)
+				.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, textMessage.getEventEndTime().getTime())
 				.putExtra(Events.TITLE, "Spotkanie")
 				.putExtra(Events.DESCRIPTION, "\"" + textMessage.getMessageBody() + "\" From: " + textMessage.getSenderName())
 				.putExtra(Events.AVAILABILITY, Events.AVAILABILITY_BUSY)
@@ -84,7 +84,7 @@ public class ResourcesHelper {
 		long startMillis = 0;
 		long endMillis = 0;
 		startMillis = textMessage.getEventBeginTime().getTime();
-		endMillis = textMessage.getEventBeginTime().getTime();
+		endMillis = textMessage.getEventEndTime().getTime();
 		
 		ContentResolver cr = context.getContentResolver();
 		ContentValues values  = new ContentValues();

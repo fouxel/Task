@@ -9,11 +9,13 @@ import com.joestelmach.natty.Parser;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 public class TextMessage implements Parcelable{
 	private String senderName;
 	private String messageBody;
 	private Date eventBeginTime;
+	private Date eventEndTime;
 	private boolean isRead;
 	
 	public boolean isRead() {
@@ -40,6 +42,7 @@ public class TextMessage implements Parcelable{
 		this.messageBody = in.readString();
 		this.senderName = in.readString();
 		this.eventBeginTime = (Date) in.readSerializable();
+		this.eventEndTime = (Date) in.readSerializable();
 		this.isRead = in.readByte() != 0;
 	}
 
@@ -72,9 +75,16 @@ public class TextMessage implements Parcelable{
 	
 	public Date getEventBeginTime() { 
 		if (eventBeginTime == null) { 
-			eventBeginTime = resolveBeginTimeFromMessageBody();
+			resolveTimesFromMessageBody();
 		}
 		return eventBeginTime;
+	}
+	
+	public Date getEventEndTime() { 
+		if (eventEndTime == null) { 
+			resolveTimesFromMessageBody();
+		}
+		return eventEndTime;
 	}
 	
 	/**
@@ -92,7 +102,7 @@ public class TextMessage implements Parcelable{
 		return input;
 	}
 	
-	private Date resolveBeginTimeFromMessageBody() { 
+	private void resolveTimesFromMessageBody() { 
 		List<Date> dateList = new ArrayList<Date>();
 
 		Parser parser = new Parser();
@@ -102,11 +112,21 @@ public class TextMessage implements Parcelable{
 				dateList.addAll(group.getDates());
 			}
 		}
-		if(dateList.size() > 0) { 
-			Date date = dateList.get(0);
-			return date;
+		
+		switch (dateList.size()) {
+			case 0:
+				eventBeginTime = new Date();
+				eventEndTime = new Date();
+				break;
+			case 1:
+				eventBeginTime = dateList.get(0);
+				eventEndTime = dateList.get(0);
+				break;
+			default:
+				eventBeginTime = dateList.get(0);
+				eventEndTime = dateList.get(1);
+				break;
 		}
-		return new Date();
 	}
 
 	@Override
@@ -119,6 +139,7 @@ public class TextMessage implements Parcelable{
 		dest.writeString(messageBody);
 		dest.writeString(senderName);
 		dest.writeSerializable(eventBeginTime);
+		dest.writeSerializable(eventEndTime);
 		dest.writeByte((byte) (isRead ? 1 : 0));
 	}
 	
