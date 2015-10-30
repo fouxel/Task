@@ -1,6 +1,7 @@
 package com.fouxel.task;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -70,9 +71,10 @@ public class MessagesManager {
 		while (cursor.moveToNext()) { 
 			String address = cursor.getString(cursor.getColumnIndex(ADDRESS));
 			String body = cursor.getString(cursor.getColumnIndexOrThrow(BODY));
+			long millis = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
 			String senderName = ResourcesHelper.getSenderName(context, address);
 			if(TextMessage.isTaskMessage(body)) {
-				textMessages.add(new TextMessage(body, senderName));
+				textMessages.add(new TextMessage(senderName, body, new Date(millis)));
 			}
 		}
 	}

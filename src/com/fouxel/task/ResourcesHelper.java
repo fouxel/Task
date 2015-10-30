@@ -1,5 +1,6 @@
 package com.fouxel.task;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,6 +21,8 @@ public class ResourcesHelper {
 	public static final String TASK_PREFIX_UPPERCASE = ".Task ";
 	public static final String NOTIFICATION_ID_NAME = "NotificationId";
 	public static final String FLAG_IS_CALENDAR_INTENT = "CalendarIntent";
+	private static final String NOTIFICATION_FORMAT_DATE = "yyyy.MM.dd";
+	private static final String NOTIFICATION_FORMAT_TIME = "HH:mm";
 	
 	public static String getContactName(Context context, String phoneNumber) { 
 		ContentResolver cr = context.getContentResolver();
@@ -105,5 +108,21 @@ public class ResourcesHelper {
 		long calendarId = ResourcesHelper.getCalendarId(context);
 		ResourcesHelper.insertCalendarEvent(context, calendarId, textMessage);
 		Toast.makeText(context, R.string.task_added, Toast.LENGTH_LONG).show();
+	}
+
+	public static boolean isToday(Date date1, Date date2) { 
+		return date1.getDay() == date2.getDay()
+				&& date1.getMonth() == date2.getMonth()
+				&& date1.getYear() == date2.getYear();
+	}
+
+	public static String getReadableFormatDate(Context context, Date inputDate) {
+		SimpleDateFormat sDate;
+		if(isToday(new Date(), inputDate)) { 
+			sDate = new SimpleDateFormat("'" + context.getResources().getString(R.string.today) + " " + context.getResources().getString(R.string.at) + " '" + NOTIFICATION_FORMAT_TIME);
+		} else {
+			sDate = new SimpleDateFormat(NOTIFICATION_FORMAT_DATE + "' " + context.getResources().getString(R.string.at) + " '" + NOTIFICATION_FORMAT_TIME);
+		}
+		return sDate.format(inputDate);
 	}
 }

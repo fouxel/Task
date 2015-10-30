@@ -31,8 +31,6 @@ import android.util.Log;
 public class SmsReceiver extends BroadcastReceiver {
 
 	private static final String SMS_RECEIVED_ACTION = "android.provider.Telephony.SMS_RECEIVED";
-	private static final String NOTIFICATION_FORMAT_DATE = "yyyy.MM.dd";
-	private static final String NOTIFICATION_FORMAT_TIME = "HH:mm";
 	private static int notificationId = 0;
 	NotificationCompat.Builder mBuilder;
 	
@@ -47,10 +45,11 @@ public class SmsReceiver extends BroadcastReceiver {
 			
 			for (SmsMessage smsMessage : this.getMessagesFromIntent(intent)) {
 				String messageBody = smsMessage.getMessageBody();
+				Date receiveDate = new Date(smsMessage.getTimestampMillis());
 				if(TextMessage.isTaskMessage(messageBody)) {
 					TextMessage textMessage = new TextMessage(
 							ResourcesHelper.getSenderName(context, smsMessage.getOriginatingAddress()),
-							messageBody);
+							messageBody, receiveDate);
 					MessagesManager.getInstance().addAtBeginning(textMessage);
 					SmsReceiverObserver.getInstance().updateValue(true); //true only in order to not to pass null object
 					Intent resultIntent = ResourcesHelper.addEventToCalendar(context, textMessage);
@@ -79,6 +78,7 @@ public class SmsReceiver extends BroadcastReceiver {
 			return;
 		}
 		Intent mainActivityIntent = new Intent(context, MainActivity.class);
+		mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pendingMainActivityIntent = PendingIntent.getActivity(context, (int)System.currentTimeMillis() + 2, mainActivityIntent, 0);
 		
 		if (numberOfUnreadMessages == 1) {
@@ -105,7 +105,7 @@ public class SmsReceiver extends BroadcastReceiver {
 				.setWhen(0)
 				.setAutoCancel(true)
 				.setContentIntent(pendingMainActivityIntent)
-				.setContentText(getNotificationFormatDate(context, textMessage.getEventBeginTime()));
+				.setContentText(ResourcesHelper.getReadableFormatDate(context, textMessage.getEventBeginTime()));
 		} else { 
 		mBuilder = new NotificationCompat.Builder(context)
 				.setSmallIcon(R.drawable.ic_launcher)
@@ -120,22 +120,6 @@ public class SmsReceiver extends BroadcastReceiver {
 			(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		notificationManager.notify(notificationId, mBuilder.build());
-	}
-	
-	private String getNotificationFormatDate(Context context, Date inputDate) {
-		SimpleDateFormat sDate;
-		if(isToday(new Date(), inputDate)) { 
-			sDate = new SimpleDateFormat("'" + context.getResources().getString(R.string.today) + " " + context.getResources().getString(R.string.at) + " '" + NOTIFICATION_FORMAT_TIME);
-		} else {
-			sDate = new SimpleDateFormat(NOTIFICATION_FORMAT_DATE + "' " + context.getResources().getString(R.string.at) + " '" + NOTIFICATION_FORMAT_TIME);
-		}
-		return sDate.format(inputDate);
-	}
-	
-	private boolean isToday(Date date1, Date date2) { 
-		return date1.getDay() == date2.getDay()
-				&& date1.getMonth() == date2.getMonth()
-				&& date1.getYear() == date2.getYear();
 	}
 	
 }

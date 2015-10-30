@@ -1,9 +1,14 @@
 package com.fouxel.task;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
+import com.joestelmach.natty.CalendarSource;
 import com.joestelmach.natty.DateGroup;
 import com.joestelmach.natty.Parser;
 
@@ -16,8 +21,17 @@ public class TextMessage implements Parcelable{
 	private String messageBody;
 	private Date eventBeginTime;
 	private Date eventEndTime;
+	private Date receiveDate;
 	private boolean isRead;
 	
+	public Date getReceiveDate() {
+		return receiveDate;
+	}
+
+	public void setReceiveDate(Date receiveDate) {
+		this.receiveDate = receiveDate;
+	}
+
 	public boolean isRead() {
 		return isRead;
 	}
@@ -26,23 +40,24 @@ public class TextMessage implements Parcelable{
 		this.isRead = isRead;
 	}
 
-	public TextMessage(String senderName, String messageBody) {
-		this(senderName, messageBody, false);
+	public TextMessage(String senderName, String messageBody, Date receiveDate) {
+		this(senderName, messageBody, receiveDate, false);
 	}
 	
-	public TextMessage(String senderName, String messageBody, boolean isRead) { 
+	public TextMessage(String senderName, String messageBody, Date receiveDate, boolean isRead) { 
 		super();
 		this.senderName = senderName;
 		this.messageBody = removeTaskPrefix(messageBody);
 		this.isRead = isRead;
+		this.receiveDate = receiveDate;
 	}
-	
 	
 	public TextMessage(Parcel in) {
 		this.messageBody = in.readString();
 		this.senderName = in.readString();
 		this.eventBeginTime = (Date) in.readSerializable();
 		this.eventEndTime = (Date) in.readSerializable();
+		this.receiveDate = (Date) in.readSerializable();
 		this.isRead = in.readByte() != 0;
 	}
 
@@ -103,8 +118,9 @@ public class TextMessage implements Parcelable{
 	}
 	
 	private void resolveTimesFromMessageBody() { 
+	    CalendarSource.setBaseDate(receiveDate);
+		
 		List<Date> dateList = new ArrayList<Date>();
-
 		Parser parser = new Parser();
 		List<DateGroup> groups = parser.parse(messageBody);
 		for (DateGroup group : groups) {
@@ -115,8 +131,8 @@ public class TextMessage implements Parcelable{
 		
 		switch (dateList.size()) {
 			case 0:
-				eventBeginTime = new Date();
-				eventEndTime = new Date();
+				eventBeginTime = new Date(receiveDate.getTime() + 60*60*1000);
+				eventEndTime = eventBeginTime;
 				break;
 			case 1:
 				eventBeginTime = dateList.get(0);
@@ -140,6 +156,7 @@ public class TextMessage implements Parcelable{
 		dest.writeString(senderName);
 		dest.writeSerializable(eventBeginTime);
 		dest.writeSerializable(eventEndTime);
+		dest.writeSerializable(receiveDate);
 		dest.writeByte((byte) (isRead ? 1 : 0));
 	}
 	

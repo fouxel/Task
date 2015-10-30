@@ -16,14 +16,12 @@ import android.widget.TextView;
 public class RowListAdapter  extends BaseAdapter {
 	int layoutId;
 	LayoutInflater inflater;
-	ArrayList<TextMessage> smsRows;
 	int titleId;
 	int descriptionId;
 	MainActivity activity;
 	
-	RowListAdapter(MainActivity activity, int layoutId, ArrayList<TextMessage> smsRows, int titleId, int descriptionId) {
+	RowListAdapter(MainActivity activity, int layoutId, int titleId, int descriptionId) {
         this.inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        this.smsRows = smsRows;
 		this.layoutId = layoutId;
 		this.titleId = titleId;
 		this.descriptionId = descriptionId;
@@ -32,12 +30,12 @@ public class RowListAdapter  extends BaseAdapter {
 
 	@Override
 	public int getCount() {
-		return smsRows.size();
+		return MessagesManager.getInstance().getTextMessages().size();
 	}
 
 	@Override
 	public Object getItem(int position) {
-		return smsRows.get(position);
+		return MessagesManager.getInstance().getTextMessages().get(position);
 	}
 
 	@Override
@@ -50,6 +48,7 @@ public class RowListAdapter  extends BaseAdapter {
 		View view;
 		TextView title;
 		TextView description;
+		TextView timeDate;
 		ImageButton buttonAdd;
 		ImageButton buttonInsert;
 		TextMessage textMessage;
@@ -62,6 +61,7 @@ public class RowListAdapter  extends BaseAdapter {
 		textMessage = (TextMessage) getItem(position);
 		title = (TextView)view.findViewById(titleId);
 		description = (TextView)view.findViewById(descriptionId);
+		timeDate = (TextView)view.findViewById(R.id.timeDate);
 		buttonAdd = (ImageButton) view.findViewById(R.id.addButton);
 		buttonInsert = (ImageButton) view.findViewById(R.id.insertButton);
 		activity.addButtonClicked(buttonAdd, textMessage, position);
@@ -69,6 +69,7 @@ public class RowListAdapter  extends BaseAdapter {
 		
 		title.setText(textMessage.getMessageBody());
 		description.setText(textMessage.getSenderName());
+		timeDate.setText(ResourcesHelper.getReadableFormatDate(activity, textMessage.getEventBeginTime()));
 		
 		return view;
 	} 

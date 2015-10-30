@@ -1,6 +1,7 @@
 package com.fouxel.task;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -31,21 +32,22 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		SmsReceiverObserver.getInstance().addObserver(this);
+		Locale.setDefault(Locale.ENGLISH);
 		
 		list = (ListView) findViewById(R.id.smsList);
 		noMessagesInfo = (TextView) findViewById(R.id.noMessages);
 		
 		messagesManager = MessagesManager.getInstance();
-		//messagesManager.getTextMessages().clear();
 		messagesManager.retrieveTextMessagesFromInbox(this);
 		textMessages = messagesManager.getTextMessages();
-		adapter = new RowListAdapter(this, R.layout.row, textMessages, R.id.title, R.id.description);
+		adapter = new RowListAdapter(this, R.layout.row, R.id.title, R.id.description);
 		list.setAdapter(adapter);
 		adapter.notifyDataSetChanged();
 		hideNoMessagesInfoIfListIsEmpty();
 		
 		actionBar = getSupportActionBar();
 		actionBar.setTitle(R.string.messages);
+		
 	}
 	
 	protected void onResume(){
