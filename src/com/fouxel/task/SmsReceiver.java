@@ -46,15 +46,15 @@ public class SmsReceiver extends BroadcastReceiver {
 			for (SmsMessage smsMessage : this.getMessagesFromIntent(intent)) {
 				String messageBody = smsMessage.getMessageBody();
 				Date receiveDate = new Date(smsMessage.getTimestampMillis());
-				if(TextMessage.isTaskMessage(messageBody)) {
-					TextMessage textMessage = new TextMessage(
-							ResourcesHelper.getSenderName(context, smsMessage.getOriginatingAddress()),
-							messageBody, receiveDate);
-					MessagesManager.getInstance().addAtBeginning(textMessage);
-					SmsReceiverObserver.getInstance().updateValue(true); //true only in order to not to pass null object
-					Intent resultIntent = ResourcesHelper.addEventToCalendar(context, textMessage);
-					addNotification(context, textMessage);
+				TextMessage textMessage = TextMessage.createIfDateProvided(
+						ResourcesHelper.getSenderName(context, smsMessage.getOriginatingAddress()), messageBody, receiveDate);
+				if (textMessage == null) { 
+					return;
 				}
+				MessagesManager.getInstance().addAtBeginning(textMessage);
+				SmsReceiverObserver.getInstance().updateValue(true); //true only in order to not to pass null object
+				ResourcesHelper.addEventToCalendar(context, textMessage);
+				addNotification(context, textMessage);
 			}
 		}
 	}

@@ -1,11 +1,7 @@
 package com.fouxel.task;
 
-import java.util.ArrayList;
-
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 public class LoadTextMessagesTask extends AsyncTask<String, Void, Boolean> {
 	private ProgressDialog dialog;
@@ -17,7 +13,7 @@ public class LoadTextMessagesTask extends AsyncTask<String, Void, Boolean> {
 	}
 	
 	protected void onPreExecute() {
-		this.dialog.setMessage("Loading text messages");
+		this.dialog.setMessage(activity.getResources().getString(R.string.loading_messages));
 		this.dialog.show();
 	}
 	
@@ -25,14 +21,14 @@ public class LoadTextMessagesTask extends AsyncTask<String, Void, Boolean> {
 		if (dialog.isShowing()) { 
 			dialog.dismiss();
 		}
-		
 		activity.onLoadingMessagesFinished();
 	}
 	
 	@Override
 	protected Boolean doInBackground(String... params) {
 		MessagesManager messagesManager = MessagesManager.getInstance();
-		messagesManager.retrieveTextMessagesFromInbox(activity);
+		messagesManager.retrieveTextMessagesFromInbox(activity, Duration.valueOf(params[0]).getDurationInMs(),
+				Duration.valueOf(params[0]) == Duration.INIFINITY ? false : true);
 		return true;
 	}
 

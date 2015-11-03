@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 	private TextView noMessagesInfo;
 	private MessagesManager messagesManager;
 	private ArrayList<TextMessage> textMessages;
+	private Button loadMoreMessages;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,15 +36,17 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		SmsReceiverObserver.getInstance().addObserver(this);
 		Locale.setDefault(Locale.ENGLISH);
 		
+		loadMoreMessages = (Button) findViewById(R.id.loadMoreMessagesBtn);
 		list = (ListView) findViewById(R.id.smsList);
 		noMessagesInfo = (TextView) findViewById(R.id.noMessages);
 		
+		loadMoreMessagesClicked();
 		messagesManager = MessagesManager.getInstance();
 		LoadTextMessagesTask task = new LoadTextMessagesTask(this);
-		task.execute();
+		task.execute(MessagesManager.lastUpdate.name());
 		
 		actionBar = getSupportActionBar();
-		actionBar.setTitle(R.string.messages);
+		actionBar.setTitle(R.string.messages_week);
 	}
 	
 	public void onLoadingMessagesFinished() { 
@@ -51,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		list.setAdapter(adapter);
 		adapter.notifyDataSetChanged();
 		hideNoMessagesInfoIfListIsEmpty();
+		actionBar.setTitle(messagesManager.lastUpdate.getInfoId());
 		
 	}
 	
@@ -89,10 +94,26 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		});
 	}
 	
+	private void loadMoreMessagesClicked() { 
+		loadMoreMessages.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				LoadTextMessagesTask task = new LoadTextMessagesTask(MainActivity.this);
+				if (MessagesManager.lastUpdate == Duration.INIFINITY) { 
+					return;
+				}
+				MessagesManager.lastUpdate = Duration.values()[MessagesManager.lastUpdate.ordinal() +1 ];
+				task.execute(MessagesManager.lastUpdate.name());
+				
+			}
+		});
+	}
+	
 	private void hideNoMessagesInfoIfListIsEmpty() { 
 		if (!textMessages.isEmpty()) { 
 			list.setVisibility(View.VISIBLE);
 			noMessagesInfo.setVisibility(View.GONE);
 		}
+		loadMoreMessages.setVisibility(View.VISIBLE);
 	}
 }

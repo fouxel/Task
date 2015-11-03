@@ -6,6 +6,7 @@ import java.util.Date;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 
 public class MessagesManager {
 	private static final String INBOX_URI = "content://sms/inbox";
@@ -14,7 +15,8 @@ public class MessagesManager {
 	
 	private static MessagesManager instance = null;
 	private ArrayList<TextMessage> textMessages;
-
+	public static Duration lastUpdate = Duration.WEEK;
+	
 	public ArrayList<TextMessage> getTextMessages() {
 		return textMessages;
 	}
@@ -58,23 +60,30 @@ public class MessagesManager {
 			textMessage.setRead(true);
 		}
 	}
+	
 	/**
 	 * Retrieves text messages from inbox and adds it
 	 * into textMessages.
 	 * 
 	 * @param context Context
 	 */
-	public void retrieveTextMessagesFromInbox(Context context) { 
+	public void retrieveTextMessagesFromInbox(Context context, long duration, boolean checkDuration) { 
 		Uri SmsUri = Uri.parse(INBOX_URI);
-		Cursor cursor = context.getContentResolver().query(SmsUri, new String[] {"address", "date", "body"}, "body LIKE '.task%'", null, null);
-		
+		Cursor cursor = context.getContentResolver().query(SmsUri, new String[] {"address", "date", "body"}, "", null, null);
+		Date current = new Date();
+		long currentMillis = current.getTime();
 		while (cursor.moveToNext()) { 
+			long millis = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
+			if (checkDuration && millis < currentMillis - duration) { 
+				return;
+			}
 			String address = cursor.getString(cursor.getColumnIndex(ADDRESS));
 			String body = cursor.getString(cursor.getColumnIndexOrThrow(BODY));
-			long millis = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
-			String senderName = ResourcesHelper.getSenderName(context, address);
-			if(TextMessage.isTaskMessage(body)) {
-				textMessages.add(new TextMessage(senderName, body, new Date(millis), true));
+			String senderName = ""; //senderName will be passed only if it is message with date
+			TextMessage tm = TextMessage.createIfDateProvided(senderName, body, new Date(millis));
+			if (tm != null) {
+				tm.setSenderName(ResourcesHelper.getSenderName(context, address));
+				textMessages.add(tm);
 			}
 		}
 	}

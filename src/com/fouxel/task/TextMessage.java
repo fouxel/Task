@@ -13,10 +13,10 @@ import android.os.Parcelable;
 public class TextMessage implements Parcelable{
 	private String senderName;
 	private String messageBody;
-	private Date eventBeginTime;
-	private Date eventEndTime;
+	private Event event;
 	private Date receiveDate;
 	private boolean isRead;
+	private boolean isTaskMessage;
 	
 	public Date getReceiveDate() {
 		return receiveDate;
@@ -34,23 +34,23 @@ public class TextMessage implements Parcelable{
 		this.isRead = isRead;
 	}
 
-	public TextMessage(String senderName, String messageBody, Date receiveDate) {
-		this(senderName, messageBody, receiveDate, false);
+	public TextMessage(String senderName, String messageBody, Date receiveDate, Event event) {
+		this(senderName, messageBody, receiveDate, event, false);
 	}
 	
-	public TextMessage(String senderName, String messageBody, Date receiveDate, boolean isRead) { 
-		super();
+	public TextMessage(String senderName, String messageBody, Date receiveDate, Event event, boolean isRead) { 
+		super(); 
 		this.senderName = senderName;
-		this.messageBody = removeTaskPrefix(messageBody);
+		this.messageBody = messageBody;
 		this.isRead = isRead;
 		this.receiveDate = receiveDate;
+		this.event = event;
 	}
-	
+
 	public TextMessage(Parcel in) {
 		this.messageBody = in.readString();
 		this.senderName = in.readString();
-		this.eventBeginTime = (Date) in.readSerializable();
-		this.eventEndTime = (Date) in.readSerializable();
+		this.event = (Event) in.readParcelable(Event.class.getClassLoader());
 		this.receiveDate = (Date) in.readSerializable();
 		this.isRead = in.readByte() != 0;
 	}
@@ -83,17 +83,11 @@ public class TextMessage implements Parcelable{
 	}
 	
 	public Date getEventBeginTime() { 
-		if (eventBeginTime == null) { 
-			resolveTimesFromMessageBody();
-		}
-		return eventBeginTime;
+		return event.beginTime;
 	}
 	
 	public Date getEventEndTime() { 
-		if (eventEndTime == null) { 
-			resolveTimesFromMessageBody();
-		}
-		return eventEndTime;
+		return event.endTime;
 	}
 	
 	/**
@@ -111,7 +105,8 @@ public class TextMessage implements Parcelable{
 		return input;
 	}
 	
-	private void resolveTimesFromMessageBody() { 
+	private static Event resolveTimesFromMessageBody(Date receiveDate, String messageBody) {
+		Event eventTime = new Event();
 	    CalendarSource.setBaseDate(receiveDate);
 		
 		List<Date> dateList = new ArrayList<Date>();
@@ -125,18 +120,20 @@ public class TextMessage implements Parcelable{
 		
 		switch (dateList.size()) {
 			case 0:
-				eventBeginTime = new Date(receiveDate.getTime() + 60*60*1000);
-				eventEndTime = eventBeginTime;
+				eventTime.beginTime = null;
+				eventTime.endTime = null;
 				break;
 			case 1:
-				eventBeginTime = dateList.get(0);
-				eventEndTime = dateList.get(0);
+				eventTime.beginTime = dateList.get(0);
+				eventTime.endTime = dateList.get(0);
 				break;
 			default:
-				eventBeginTime = dateList.get(0);
-				eventEndTime = dateList.get(1);
+				eventTime.beginTime = dateList.get(0);
+				eventTime.endTime = dateList.get(1);
 				break;
 		}
+		
+		return eventTime;
 	}
 
 	@Override
@@ -148,11 +145,19 @@ public class TextMessage implements Parcelable{
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(messageBody);
 		dest.writeString(senderName);
-		dest.writeSerializable(eventBeginTime);
-		dest.writeSerializable(eventEndTime);
+		dest.writeParcelable(event, 0);
 		dest.writeSerializable(receiveDate);
 		dest.writeByte((byte) (isRead ? 1 : 0));
 	}
+	
+	public static TextMessage createIfDateProvided(String senderName, String messageBody, Date receiveDate) { 
+		TextMessage textMessage = null;
+		Event event = resolveTimesFromMessageBody(receiveDate, messageBody);
+		if (event.beginTime != null) { 
+			textMessage = new TextMessage(senderName, messageBody, receiveDate, event);
+		}
+		return textMessage;
+	} 
 	
 	public static final Parcelable.Creator CREATOR = new Parcelable.Creator() { 
 		public TextMessage createFromParcel(Parcel in) { 
@@ -164,4 +169,6 @@ public class TextMessage implements Parcelable{
 		}
 		
 	};
+	
+	
 }

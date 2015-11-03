@@ -4,6 +4,13 @@
     <string name="app_name">.Task</string>
     <string name="action_settings">Ustawienia</string>
     <string name="messages">Wiadomości</string>
+    <string name="messages_day">Wiadomości (ostatni dzień)</string>
+    <string name="messages_week">Wiadomości (ostatni tydzień)</string>
+    <string name="messages_month">Wiadomości (ostatni miesiąc)</string>
+    <string name="messages_year">Wiadomości (ostatni rok)</string>
+    <string name="messages_all">Wszystkie wiadomości</string>
+    <string name="loading_messages">Wczytywanie wiadomości</string>
+    <string name="load_more_messages">Wczytaj więcej wiadomości</string>
     <string name="meeting">Spotkanie</string>
 	<string name="new_task">Nowe zadanie</string>
 	<string name="today">Dzisiaj</string>
