@@ -14,6 +14,8 @@ import android.net.Uri;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 import android.provider.ContactsContract.PhoneLookup;
+import android.text.format.DateUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 public class ResourcesHelper {
@@ -109,16 +111,17 @@ public class ResourcesHelper {
 		ResourcesHelper.insertCalendarEvent(context, calendarId, textMessage);
 		Toast.makeText(context, R.string.task_added, Toast.LENGTH_LONG).show();
 	}
-
-	public static boolean isToday(Date date1, Date date2) { 
-		return date1.getDay() == date2.getDay()
-				&& date1.getMonth() == date2.getMonth()
-				&& date1.getYear() == date2.getYear();
+	
+	public static boolean isPast(long millis) { 
+		long current = new Date().getTime();
+		Log.i("LOL", "current: " + current);
+		Log.i("LOL", "millis: " + millis);
+		return current > millis ? true : false;
 	}
 
 	public static String getReadableFormatDate(Context context, Date inputDate) {
 		SimpleDateFormat sDate;
-		if(isToday(new Date(), inputDate)) { 
+		if(DateUtils.isToday(inputDate.getTime())) { 
 			sDate = new SimpleDateFormat("'" + context.getResources().getString(R.string.today) + " " + context.getResources().getString(R.string.at) + " '" + NOTIFICATION_FORMAT_TIME);
 		} else {
 			sDate = new SimpleDateFormat(NOTIFICATION_FORMAT_DATE + "' " + context.getResources().getString(R.string.at) + " '" + NOTIFICATION_FORMAT_TIME);

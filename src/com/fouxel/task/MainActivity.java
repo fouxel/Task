@@ -12,8 +12,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -38,15 +38,19 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		noMessagesInfo = (TextView) findViewById(R.id.noMessages);
 		
 		messagesManager = MessagesManager.getInstance();
-		messagesManager.retrieveTextMessagesFromInbox(this);
+		LoadTextMessagesTask task = new LoadTextMessagesTask(this);
+		task.execute();
+		
+		actionBar = getSupportActionBar();
+		actionBar.setTitle(R.string.messages);
+	}
+	
+	public void onLoadingMessagesFinished() { 
 		textMessages = messagesManager.getTextMessages();
 		adapter = new RowListAdapter(this, R.layout.row, R.id.title, R.id.description);
 		list.setAdapter(adapter);
 		adapter.notifyDataSetChanged();
 		hideNoMessagesInfoIfListIsEmpty();
-		
-		actionBar = getSupportActionBar();
-		actionBar.setTitle(R.string.messages);
 		
 	}
 	

@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeightLarge"
+    android:descendantFocusability="blocksDescendants"
     android:padding="6dip">
     
     <ImageView
@@ -26,7 +27,6 @@
         android:textSize="12sp"
         >
     </TextView>  
-
     <TextView
         android:id="@+id/description"
         android:layout_width="fill_parent"
@@ -34,7 +34,6 @@
         android:layout_alignParentBottom="true"
         android:layout_toLeftOf="@+id/insertButton"
         android:layout_toRightOf="@id/icon"
-        android:ellipsize="marquee"
         android:singleLine="true"
         android:focusable="false"
         android:text="Description long enough to test that only one line is allowed"
@@ -49,7 +48,7 @@
         android:gravity="center_vertical"
         android:src="@drawable/ic_calendar"
         android:focusable="false"
-        android:background="@android:color/transparent"
+        android:background="@drawable/selector"
         />
     <ImageButton 
         android:id="@+id/insertButton"
@@ -61,7 +60,7 @@
         android:layout_marginRight="5dp"
         android:src="@drawable/ic_check"
         android:focusable="false"
-        android:background="@android:color/transparent"
+        android:background="@drawable/selector"
         />
 
     <TextView
@@ -71,7 +70,6 @@
         android:layout_alignLeft="@+id/description"
         android:layout_alignTop="@+id/icon"
         android:layout_toLeftOf="@+id/insertButton"
-        android:ellipsize="end"
         android:gravity="center_vertical"
         android:singleLine="true"
         android:text="Meeting next Monday at 16"

@@ -66,7 +66,7 @@ public class MessagesManager {
 	 */
 	public void retrieveTextMessagesFromInbox(Context context) { 
 		Uri SmsUri = Uri.parse(INBOX_URI);
-		Cursor cursor = context.getContentResolver().query(SmsUri, null, null, null, null);
+		Cursor cursor = context.getContentResolver().query(SmsUri, new String[] {"address", "date", "body"}, "body LIKE '.task%'", null, null);
 		
 		while (cursor.moveToNext()) { 
 			String address = cursor.getString(cursor.getColumnIndex(ADDRESS));
@@ -74,7 +74,7 @@ public class MessagesManager {
 			long millis = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
 			String senderName = ResourcesHelper.getSenderName(context, address);
 			if(TextMessage.isTaskMessage(body)) {
-				textMessages.add(new TextMessage(senderName, body, new Date(millis)));
+				textMessages.add(new TextMessage(senderName, body, new Date(millis), true));
 			}
 		}
 	}

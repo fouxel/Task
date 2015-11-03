@@ -1,8 +1,11 @@
 package com.fouxel.task;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,7 +69,12 @@ public class RowListAdapter  extends BaseAdapter {
 		buttonInsert = (ImageButton) view.findViewById(R.id.insertButton);
 		activity.addButtonClicked(buttonAdd, textMessage, position);
 		activity.insertButtonClicked(buttonInsert, textMessage);
-		
+		Log.i("LOL", "body: " + textMessage.getMessageBody());
+		Log.i("LOL", "event: " + ResourcesHelper.getReadableFormatDate(activity, textMessage.getEventBeginTime()));
+		Log.i("LOL", "current: " + ResourcesHelper.getReadableFormatDate(activity, new Date()));
+		if(ResourcesHelper.isPast(textMessage.getEventBeginTime().getTime())) {
+			title.setTextColor(Color.RED);
+		}
 		title.setText(textMessage.getMessageBody());
 		description.setText(textMessage.getSenderName());
 		timeDate.setText(ResourcesHelper.getReadableFormatDate(activity, textMessage.getEventBeginTime()));

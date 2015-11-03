@@ -14,9 +14,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:descendantFocusability="blocksDescendants"
         android:clickable="true"
-        android:visibility="invisible" >
+        android:focusable="true"
+        android:visibility="visible" >
     </ListView>
   
     <TextView

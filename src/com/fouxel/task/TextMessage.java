@@ -1,20 +1,14 @@
 package com.fouxel.task;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import com.joestelmach.natty.CalendarSource;
 import com.joestelmach.natty.DateGroup;
 import com.joestelmach.natty.Parser;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 public class TextMessage implements Parcelable{
 	private String senderName;
