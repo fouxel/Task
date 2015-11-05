@@ -27,6 +27,7 @@ public class LoadTextMessagesTask extends AsyncTask<String, Void, Boolean> {
 	@Override
 	protected Boolean doInBackground(String... params) {
 		MessagesManager messagesManager = MessagesManager.getInstance();
+		messagesManager.getTextMessages().clear();
 		messagesManager.retrieveTextMessagesFromInbox(activity, Duration.valueOf(params[0]).getDurationInMs(),
 				Duration.valueOf(params[0]) == Duration.INIFINITY ? false : true);
 		return true;

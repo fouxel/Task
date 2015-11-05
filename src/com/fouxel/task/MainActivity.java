@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		list = (ListView) findViewById(R.id.smsList);
 		noMessagesInfo = (TextView) findViewById(R.id.noMessages);
 		
-		loadMoreMessagesClicked();
+		registerCallbackMoreMessagesClicked();
 		messagesManager = MessagesManager.getInstance();
 		LoadTextMessagesTask task = new LoadTextMessagesTask(this);
 		task.execute(MessagesManager.lastUpdate.name());
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		});
 	}
 	
-	private void loadMoreMessagesClicked() { 
+	private void registerCallbackMoreMessagesClicked() { 
 		loadMoreMessages.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {

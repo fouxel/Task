@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
+import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -29,13 +30,16 @@ public class ResourcesHelper {
 	public static String getContactName(Context context, String phoneNumber) { 
 		ContentResolver cr = context.getContentResolver();
 		Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-		Cursor cursor = cr.query(uri, new String[]{PhoneLookup.DISPLAY_NAME}, null, null, null);
+		Cursor cursor = cr.query(uri, null, null, null, null);
 		if (cursor == null) { 
 			return null;
 		}
 		String contactName = null;
 		if (cursor.moveToFirst()) { 
 			contactName = cursor.getString(cursor.getColumnIndex(PhoneLookup.DISPLAY_NAME));
+			String photoId = cursor.getString(cursor.getColumnIndex(PhoneLookup.PHOTO_ID));
+			if(photoId != null)
+				Log.i("lol", photoId);
 		}
 		
 		if (cursor != null && !cursor.isClosed()) { 

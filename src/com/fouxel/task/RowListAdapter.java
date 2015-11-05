@@ -65,12 +65,9 @@ public class RowListAdapter  extends BaseAdapter {
 		buttonInsert = (ImageButton) view.findViewById(R.id.insertButton);
 		activity.addButtonClicked(buttonAdd, textMessage, position);
 		activity.insertButtonClicked(buttonInsert, textMessage);
-		Log.i("LOL", "body: " + textMessage.getMessageBody());
-		Log.i("LOL", "event: " + ResourcesHelper.getReadableFormatDate(activity, textMessage.getEventBeginTime()));
-		Log.i("LOL", "current: " + ResourcesHelper.getReadableFormatDate(activity, new Date()));
-		if(ResourcesHelper.isPast(textMessage.getEventBeginTime().getTime())) {
-			title.setTextColor(Color.RED);
-		}
+		//Log.i("LOL", "body: " + textMessage.getMessageBody());
+		//Log.i("LOL", "event: " + ResourcesHelper.getReadableFormatDate(activity, textMessage.getEventBeginTime()));
+//		Log.i("LOL", "current: " + ResourcesHelper.getReadableFormatDate(activity, new Date()));
 		title.setText(textMessage.getMessageBody());
 		description.setText(textMessage.getSenderName());
 		timeDate.setText(ResourcesHelper.getReadableFormatDate(activity, textMessage.getEventBeginTime()));
