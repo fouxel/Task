@@ -3,6 +3,8 @@ package com.fouxel.task;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
 import com.joestelmach.natty.CalendarSource;
 import com.joestelmach.natty.DateGroup;
 import com.joestelmach.natty.Parser;
@@ -110,7 +112,7 @@ public class TextMessage implements Parcelable{
 	    CalendarSource.setBaseDate(receiveDate);
 		
 		List<Date> dateList = new ArrayList<Date>();
-		Parser parser = new Parser();
+		Parser parser = new Parser(); //TODO: make Parser global variable
 		List<DateGroup> groups = parser.parse(messageBody);
 		for (DateGroup group : groups) {
 			if (group.getDates() != null) {

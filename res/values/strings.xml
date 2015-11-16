@@ -21,4 +21,7 @@
 	<string name="from">From:</string>
 	<string name="no_messages">No messages</string>
 	<string name="task_added">Task added</string>
+	<string name="decoded_date">Decoded date:</string>
+	<string name="receive_date">Receive date:</string>
+	<string name="message">Message:</string>
 </resources>

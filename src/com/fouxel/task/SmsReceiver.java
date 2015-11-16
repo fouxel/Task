@@ -1,29 +1,16 @@
 package com.fouxel.task;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 import com.fouxel.task.R;
-import com.joestelmach.natty.DateGroup;
-import com.joestelmach.natty.Parser;
-
-import android.annotation.SuppressLint;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.provider.CalendarContract;
-import android.provider.CalendarContract.Events;
-import android.provider.Telephony.MmsSms.PendingMessages;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.Action;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
@@ -32,12 +19,12 @@ public class SmsReceiver extends BroadcastReceiver {
 
 	private static final String SMS_RECEIVED_ACTION = "android.provider.Telephony.SMS_RECEIVED";
 	private static int notificationId = 0;
-	NotificationCompat.Builder mBuilder;
+	NotificationCompat.Builder builder;
 	
 	
 	public SmsReceiver() { 
 		super();
-		mBuilder = null;
+		builder = null;
 	}
 	
 	public void onReceive(Context context, Intent intent) {
@@ -73,21 +60,40 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 	
 	private void addNotification(Context context, TextMessage textMessage) {
-		int numberOfUnreadMessages = MessagesManager.getInstance().getNumberOfUnreadMessages(); 
+		int numberOfUnreadMessages = MessagesManager.getInstance().getUnreadMessagesSize(); 
 		if(numberOfUnreadMessages == 0) {
 			return;
 		}
-		Intent mainActivityIntent = new Intent(context, MainActivity.class);
-		mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent pendingMainActivityIntent = PendingIntent.getActivity(context, (int)System.currentTimeMillis() + 2, mainActivityIntent, 0);
+		
+		Intent mainActivity = new Intent(context, MainActivity.class);
+		mainActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		PendingIntent pendingMainActivity = PendingIntent.getActivity(context, (int)System.currentTimeMillis() + 3, mainActivity, 0);
+		
+		Intent textMessageActivity = new Intent(context, TextMessageActivity.class);
+		textMessageActivity.putExtra(ResourcesHelper.MESSAGE_POSITION, 0);
+		textMessageActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+		stackBuilder.addParentStack(TextMessageActivity.class);
+		stackBuilder.addNextIntent(textMessageActivity);
+		PendingIntent pendingTextMessageActivity =
+				stackBuilder.getPendingIntent((int)System.currentTimeMillis() + 4, PendingIntent.FLAG_UPDATE_CURRENT);
 		
 		if (numberOfUnreadMessages == 1) {
+			builder = getNotificationBuilderForSingleMessage(context, textMessage, pendingTextMessageActivity);
+		} else { 
+			builder = getNotificationBuilderForMultipleMessages(context, pendingMainActivity, numberOfUnreadMessages);
+		}
+		
+		NotificationManager notificationManager = 
+			(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		
+		notificationManager.notify(notificationId, builder.build());
+	}
+	
+	private Builder getNotificationBuilderForSingleMessage(Context context, TextMessage textMessage, PendingIntent pendingTextMessageActivityIntent) { 
 	    Intent calendarIntent = new Intent(context, NotificationResultActivity.class);
 	    calendarIntent.putExtra(ResourcesHelper.NOTIFICATION_ID_NAME, notificationId);
 	    calendarIntent.putExtra(ResourcesHelper.FLAG_IS_CALENDAR_INTENT, true);
-	    calendarIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-	    calendarIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-	    calendarIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 	    calendarIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 	    calendarIntent.putExtra(TextMessage.class.toString(), textMessage);
 	    
@@ -97,29 +103,27 @@ public class SmsReceiver extends BroadcastReceiver {
 	    addEventIntent.putExtra(TextMessage.class.toString(), textMessage);
 		PendingIntent pendingCalendarIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), calendarIntent, 0);
 		PendingIntent pendingAddEventIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis() + 1, addEventIntent, 0);
-		mBuilder = new NotificationCompat.Builder(context)
+		builder = new NotificationCompat.Builder(context)
 				.setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(context.getResources().getString(R.string.new_task))
 				.addAction(R.drawable.ic_check, context.getResources().getString(R.string.add), pendingAddEventIntent)
 				.addAction(R.drawable.ic_calendar, context.getResources().getString(R.string.view), pendingCalendarIntent)
 				.setWhen(0)
 				.setAutoCancel(true)
-				.setContentIntent(pendingMainActivityIntent)
+				.setContentIntent(pendingTextMessageActivityIntent)
 				.setContentText(ResourcesHelper.getReadableFormatDate(context, textMessage.getEventBeginTime()));
-		} else { 
-		mBuilder = new NotificationCompat.Builder(context)
+		return builder;
+	}
+	
+	private Builder getNotificationBuilderForMultipleMessages(Context context, PendingIntent pendingMainActivityIntent, int numberOfUnreadMessages) { 
+		builder = new NotificationCompat.Builder(context)
 				.setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(context.getResources().getString(R.string.new_task))
 				.setWhen(0)
 				.setAutoCancel(true)
 				.setContentIntent(pendingMainActivityIntent)
 				.setContentText(numberOfUnreadMessages + " " + context.getResources().getString(R.string.unread_messages));
-		}
-		
-		NotificationManager notificationManager = 
-			(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		
-		notificationManager.notify(notificationId, mBuilder.build());
+		return builder;
 	}
 	
 }

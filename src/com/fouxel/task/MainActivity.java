@@ -14,13 +14,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements Observer {
-	private ListView list;
+	private ListView smsList;
 	private RowListAdapter adapter;
 	private static final int REQUEST_CODE_CALENDAR = 2;
 	private ActionBar actionBar;
@@ -37,10 +39,11 @@ public class MainActivity extends AppCompatActivity implements Observer {
 		Locale.setDefault(Locale.ENGLISH);
 		
 		loadMoreMessages = (Button) findViewById(R.id.loadMoreMessagesBtn);
-		list = (ListView) findViewById(R.id.smsList);
+		smsList = (ListView) findViewById(R.id.smsList);
 		noMessagesInfo = (TextView) findViewById(R.id.noMessages);
 		
 		registerCallbackMoreMessagesClicked();
+		smsListOnClickListener();
 		messagesManager = MessagesManager.getInstance();
 		LoadTextMessagesTask task = new LoadTextMessagesTask(this);
 		task.execute(MessagesManager.lastUpdate.name());
@@ -52,10 +55,10 @@ public class MainActivity extends AppCompatActivity implements Observer {
 	public void onLoadingMessagesFinished() { 
 		textMessages = messagesManager.getTextMessages();
 		adapter = new RowListAdapter(this, R.layout.row, R.id.title, R.id.description);
-		list.setAdapter(adapter);
+		smsList.setAdapter(adapter);
 		adapter.notifyDataSetChanged();
 		hideNoMessagesInfoIfListIsEmpty();
-		actionBar.setTitle(messagesManager.lastUpdate.getInfoId());
+		actionBar.setTitle(MessagesManager.lastUpdate.getInfoId());
 		
 	}
 	
@@ -104,14 +107,25 @@ public class MainActivity extends AppCompatActivity implements Observer {
 				}
 				MessagesManager.lastUpdate = Duration.values()[MessagesManager.lastUpdate.ordinal() +1 ];
 				task.execute(MessagesManager.lastUpdate.name());
-				
+			}
+		});
+	}
+	
+	private void smsListOnClickListener() { 
+		smsList.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				Intent textMessageActivity = new Intent(MainActivity.this, TextMessageActivity.class);
+				textMessageActivity.putExtra(ResourcesHelper.MESSAGE_POSITION, position);
+				startActivity(textMessageActivity);
 			}
 		});
 	}
 	
 	private void hideNoMessagesInfoIfListIsEmpty() { 
 		if (!textMessages.isEmpty()) { 
-			list.setVisibility(View.VISIBLE);
+			smsList.setVisibility(View.VISIBLE);
 			noMessagesInfo.setVisibility(View.GONE);
 		}
 		loadMoreMessages.setVisibility(View.VISIBLE);

@@ -26,6 +26,7 @@ public class ResourcesHelper {
 	public static final String FLAG_IS_CALENDAR_INTENT = "CalendarIntent";
 	private static final String NOTIFICATION_FORMAT_DATE = "yyyy.MM.dd";
 	private static final String NOTIFICATION_FORMAT_TIME = "HH:mm";
+	public static final String MESSAGE_POSITION = "messageLocation";
 	
 	public static String getContactName(Context context, String phoneNumber) { 
 		ContentResolver cr = context.getContentResolver();

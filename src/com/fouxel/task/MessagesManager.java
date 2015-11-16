@@ -45,7 +45,7 @@ public class MessagesManager {
 		add(textMessage, 0);
 	}
 
-	public int getNumberOfUnreadMessages() { 
+	public int getUnreadMessagesSize() { 
 		int count = 0;
 		for (TextMessage textMessage : textMessages) {
 			if (!textMessage.isRead()) {
@@ -53,6 +53,10 @@ public class MessagesManager {
 			}
 		}
 		return count;
+	}
+	
+	public int getMessagesSize() { 
+		return textMessages.size();
 	}
 	
 	public void markAllMessagesAsRead() { 
